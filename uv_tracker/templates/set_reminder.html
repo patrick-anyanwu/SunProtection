@@ -1,0 +1,565 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Set Reminder</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #fde5cf;
+            background-image: linear-gradient(135deg, #fde5cf 0%, #fff1e6 100%);
+            text-align: center;
+            font-family: 'Nunito', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #264653;
+            min-height: 100vh;
+        }
+
+        .reminder-section {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 32px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reminder-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #e76f51, #f4a261, #2a9d8f);
+        }
+
+        .reminder-title {
+            font-size: 2em;
+            font-weight: 700;
+            color: #e76f51;
+            margin-bottom: 12px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .reminder-title::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background-color: #f4a261;
+            border-radius: 3px;
+        }
+
+        .reminder-subtitle {
+            font-size: 1.3em;
+            color: #555;
+            margin-bottom: 30px;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .reminder-content {
+            display: flex;
+            justify-content: center;
+        }
+
+        .reminder-controls {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: stretch;
+            gap: 25px;
+            width: 100%;
+        }
+
+        .input-section {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-radius: 16px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .time-input-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .time-input-container::before {
+            content: "⌚";
+            position: absolute;
+            left: calc(50% - 90px);
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #f4a261;
+            z-index: 1;
+        }
+
+        .input-label {
+            font-size: 1.1em;
+            color: #264653;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        #sunscreen-time {
+            width: 100%;
+            max-width: 180px;
+            padding: 14px 14px 14px 40px;
+            font-size: 18px;
+            border: 2px solid #f4a261;
+            border-radius: 14px;
+            background-color: #fff;
+            color: #333;
+            font-family: 'Nunito', Arial, sans-serif;
+            box-shadow: 0 3px 8px rgba(244, 162, 97, 0.15);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        #sunscreen-time:focus {
+            border-color: #e76f51;
+            outline: none;
+            box-shadow: 0 3px 12px rgba(231, 111, 81, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .button-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .timer-section {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: linear-gradient(145deg, #264653, #2a6173);
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(38, 70, 83, 0.25);
+        }
+
+        button {
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            background-color: #2a9d8f;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-family: 'Nunito', Arial, sans-serif;
+            width: 100%;
+            max-width: 220px;
+            box-shadow: 0 4px 8px rgba(42, 157, 143, 0.25);
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        button::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+        }
+
+        button:hover {
+            background-color: #268880;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover::after {
+            transform: translateX(0);
+        }
+
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .start-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .start-button::before {
+            content: "▶";
+            font-size: 14px;
+        }
+
+        .stop-button {
+            background-color: #e76f51;
+            box-shadow: 0 4px 8px rgba(231, 111, 81, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .stop-button::before {
+            content: "■";
+            font-size: 14px;
+        }
+
+        .stop-button:hover {
+            background-color: #d65f41;
+        }
+
+        .countdown-container {
+            text-align: center;
+            width: 100%;
+        }
+
+        .countdown-label {
+            font-size: 1.1em;
+            color: #f4a261;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .digital-clock {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #fff;
+            padding: 16px 24px;
+            border-radius: 16px;
+            display: inline-block;
+            font-family: "Courier New", monospace;
+            letter-spacing: 3px;
+            background: rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), 
+                        inset 0 2px 5px rgba(255, 255, 255, 0.1);
+            text-shadow: 0 0 15px rgba(244, 162, 97, 0.8);
+            transition: all 0.3s ease;
+            min-width: 220px;
+        }
+
+        .digital-clock.active {
+            animation: pulse 2s infinite;
+            color: #f4a261;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            color: #fff;
+            font-weight: 600;
+            min-height: 24px;
+            transition: opacity 0.3s ease;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .sun-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 30px;
+            color: #f4a261;
+            opacity: 0.7;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .reminder-section {
+                margin: 20px 15px;
+                padding: 25px 15px;
+                max-width: calc(100% - 30px);
+            }
+            
+            .reminder-controls {
+                flex-direction: column;
+            }
+            
+            .reminder-title {
+                font-size: 1.7em;
+            }
+            
+            .digital-clock {
+                font-size: 2em;
+                padding: 12px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'partials/header.html' %}
+
+    <section class="reminder-section">
+        <span class="sun-icon">☀️</span>
+        <h2 class="reminder-title">Stay sun-safe. Set a reminder.</h2>
+        <p class="reminder-subtitle">When was the last time you applied sunscreen today?</p>
+
+        <div class="reminder-content">
+            <div class="reminder-controls">
+                <div class="input-section">
+                    <div class="input-label">Last Application Time</div>
+                    <div class="time-input-container">
+                        <input type="time" id="sunscreen-time" aria-label="Last sunscreen application time" />
+                    </div>
+                    
+                    <div class="button-section">
+                        <button class="start-button" onclick="startReminder()">Start Reminder (Every 2 Hours)</button>
+                        <button class="stop-button" onclick="stopReminder()">Stop Reminder</button>
+                    </div>
+                </div>
+                
+                <div class="timer-section">
+                    <div class="countdown-container">
+                        <div class="countdown-label">Next Reminder In:</div>
+                        <div id="countdown" class="digital-clock">--:--:--</div>
+                    </div>
+                    
+                    <div id="status-message" class="status-message"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        let reminderInterval;
+        let countdownInterval;
+
+        function startReminder() {
+            const inputTime = document.getElementById("sunscreen-time").value;
+            if (!inputTime) {
+                showStatusMessage("Please enter the time you last applied sunscreen.", "error");
+                return;
+            }
+
+            clearTimeout(reminderInterval);
+            clearInterval(countdownInterval);
+
+            let now = new Date();
+            let [hours, minutes] = inputTime.split(":").map(Number);
+            let sunscreenTime = new Date();
+            sunscreenTime.setHours(hours, minutes, 0, 0);
+
+            // Handle times that would have been more than 2 hours ago
+            while (sunscreenTime < now && (now - sunscreenTime) > 2 * 60 * 60 * 1000) {
+                sunscreenTime.setTime(sunscreenTime.getTime() + 2 * 60 * 60 * 1000);
+            }
+
+            if (sunscreenTime >= now) {
+                showStatusMessage("Please enter a time in the past!", "error");
+                return;
+            }
+
+            let reminderTime = new Date(sunscreenTime.getTime() + 2 * 60 * 60 * 1000);
+            
+            localStorage.setItem('reminderActive', 'true');
+            localStorage.setItem('reminderTime', reminderTime.getTime());
+
+            updateCountdown(reminderTime);
+            document.getElementById("countdown").classList.add("active");
+            
+            countdownInterval = setInterval(() => {
+                updateCountdown(reminderTime);
+            }, 1000);
+            
+            function setNextReminder() {
+                if (localStorage.getItem('reminderActive') !== 'true') {
+                    return;
+                }
+                
+                let storedTime = parseInt(localStorage.getItem('reminderTime'));
+                reminderTime = new Date(storedTime);
+                
+                let timeToWait = reminderTime - new Date();
+                if (timeToWait <= 0) {
+                    sendNotification("Time to reapply sunscreen!");
+                    showStatusMessage("Time to reapply sunscreen!", "alert");
+                    reminderTime.setTime(reminderTime.getTime() + 2 * 60 * 60 * 1000);
+                    localStorage.setItem('reminderTime', reminderTime.getTime());
+                    timeToWait = 2 * 60 * 60 * 1000;
+                }
+                reminderInterval = setTimeout(setNextReminder, timeToWait);
+            }
+
+            setNextReminder();
+            sendNotification("Reminder set! You will be reminded every 2 hours.");
+            showStatusMessage("Reminder set! You'll be reminded every 2 hours.", "success");
+            
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'reminderActive' && e.newValue === 'false') {
+                    stopReminder(false);
+                } else if (e.key === 'reminderTime') {
+                    updateCountdown(new Date(parseInt(e.newValue)));
+                }
+            });
+        }
+
+        function stopReminder(updateStorage = true) {
+            clearTimeout(reminderInterval);
+            clearInterval(countdownInterval);
+            document.getElementById("countdown").textContent = "--:--:--";
+            document.getElementById("countdown").classList.remove("active");
+            
+            if (updateStorage) {
+                localStorage.removeItem('reminderActive');
+                localStorage.removeItem('reminderTime');
+                showStatusMessage("Reminders stopped.", "info");
+            }
+        }
+
+        function updateCountdown(reminderTime) {
+            let now = new Date();
+            let diff = reminderTime - now;
+
+            if (diff <= 0) {
+                document.getElementById("countdown").textContent = "00:00:00";
+                return;
+            }
+
+            let hours = Math.floor(diff / (1000 * 60 * 60));
+            let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            hours = hours.toString().padStart(2, '0');
+            minutes = minutes.toString().padStart(2, '0');
+            seconds = seconds.toString().padStart(2, '0');
+
+            document.getElementById("countdown").textContent = `${hours}:${minutes}:${seconds}`;
+            
+            // Add visual indication when close to reminder time
+            if (diff < 300000) { // 5 minutes
+                document.getElementById("countdown").style.textShadow = "0 0 15px rgba(231, 111, 81, 0.9)";
+            } else {
+                document.getElementById("countdown").style.textShadow = "0 0 15px rgba(244, 162, 97, 0.8)";
+            }
+        }
+
+        function showStatusMessage(message, type) {
+            const statusElement = document.getElementById("status-message");
+            statusElement.textContent = message;
+            
+            // Set color based on message type
+            if (type === "error") {
+                statusElement.style.color = "#ff9e80";
+            } else if (type === "success") {
+                statusElement.style.color = "#a7ffeb";
+            } else if (type === "alert") {
+                statusElement.style.color = "#ffd180";
+                statusElement.style.fontWeight = "700";
+            } else {
+                statusElement.style.color = "#fff";
+            }
+            
+            // Make status message visible
+            statusElement.style.opacity = "1";
+            
+            // Clear error message after 5 seconds
+            setTimeout(() => {
+                statusElement.style.opacity = "0";
+            }, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default time value to the current time
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById("sunscreen-time").value = `${hours}:${minutes}`;
+            
+            if (localStorage.getItem('reminderActive') === 'true') {
+                let storedTime = parseInt(localStorage.getItem('reminderTime'));
+                if (!isNaN(storedTime)) {
+                    let reminderTime = new Date(storedTime);
+                    updateCountdown(reminderTime);
+                    document.getElementById("countdown").classList.add("active");
+                    showStatusMessage("Reminder active", "success");
+                    
+                    countdownInterval = setInterval(() => {
+                        updateCountdown(reminderTime);
+                    }, 1000);
+
+                    function setNextReminder() {
+                        let timeToWait = reminderTime - new Date();
+                        if (timeToWait <= 0) {
+                            sendNotification("Time to reapply sunscreen!");
+                            showStatusMessage("Time to reapply sunscreen!", "alert");
+                            reminderTime.setTime(reminderTime.getTime() + 2 * 60 * 60 * 1000);
+                            localStorage.setItem('reminderTime', reminderTime.getTime());
+                            timeToWait = 2 * 60 * 60 * 1000;
+                        }
+                        reminderInterval = setTimeout(setNextReminder, timeToWait);
+                    }
+
+                    setNextReminder();
+                }
+            }
+        });
+
+        function sendNotification(message) {
+            if (!("Notification" in window)) {
+                alert("This browser does not support notifications");
+                return;
+            }
+            if (Notification.permission === "granted") {
+                new Notification("UV Tracker Reminder", {
+                    body: message,
+                    icon: "{% static 'images/logo.png' %}",
+                    requireInteraction: true
+                });
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification("UV Tracker Reminder", {
+                            body: message,
+                            icon: "{% static 'images/logo.png' %}",
+                            requireInteraction: true
+                        });
+                    }
+                });
+            } else {
+                alert(message);
+            }
+        }
+    </script>
+</body>
+</html>

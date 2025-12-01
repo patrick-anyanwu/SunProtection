@@ -1,0 +1,531 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UV Index - Victoria, Australia</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+      body {
+        background-color: #fde5cf;
+        text-align: center;
+        font-family: 'Nunito', Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 0;
+      }
+      
+      .container {
+        max-width: 900px; /* Increased from 600px to 900px */
+        margin: 0 auto;
+        padding: 20px;
+      }
+      
+      .uv-content {
+        margin: 20px auto;
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      }
+      
+      .location-notice {
+        background-color: #e7f3ff;
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin: 0 auto 15px;
+        max-width: 700px; /* Increased from 450px */
+        color: #2271b1;
+        font-weight: 600;
+        font-size: 0.95em;
+        border-left: 4px solid #2271b1;
+        text-align: left;
+        box-shadow: 0 3px 6px rgba(34, 113, 177, 0.1);
+      }
+      
+      .search-container {
+        margin-bottom: 20px;
+      }
+      
+      .search-input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 400px; /* Increased from 300px */
+        margin-bottom: 8px;
+      }
+      
+      #location-input {
+        width: 100%;
+        padding: 12px 18px;
+        border: 2px solid #6c8eef;
+        border-radius: 50px;
+        font-size: 16px;
+        box-shadow: 0 3px 8px rgba(108, 142, 239, 0.15);
+        transition: all 0.3s ease;
+        outline: none;
+        font-family: 'Nunito', Arial, sans-serif;
+      }
+      
+      #location-input:focus {
+        border-color: #4361ee;
+        box-shadow: 0 3px 10px rgba(67, 97, 238, 0.25);
+      }
+      
+      #location-input::placeholder {
+        color: #999;
+        opacity: 0.8;
+      }
+      
+      .suggestions-container {
+        position: absolute;
+        width: 100%;
+        max-height: 250px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-top: 5px;
+        text-align: left;
+      }
+      
+      .suggestion-item {
+        padding: 10px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.2s ease;
+      }
+      
+      .suggestion-item:hover {
+        background-color: #e7f3ff;
+      }
+      
+      .search-instructions {
+        margin: 5px auto 15px;
+        font-style: italic;
+        color: #777;
+        max-width: 600px; /* Increased from 450px */
+        font-size: 0.85em;
+      }
+      
+      .error-message {
+        color: #c1121f;
+        font-weight: bold;
+        margin: 12px auto;
+        padding: 8px 12px;
+        background-color: rgba(193, 18, 31, 0.1);
+        border-radius: 10px;
+        max-width: 600px; /* Increased from 450px */
+      }
+      
+      .uv-info {
+        margin-top: 20px;
+        background-color: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      }
+      
+      .uv-info h2, .uv-info h3 {
+        margin: 12px 0;
+        color: #2a2a2a;
+        font-size: 1.2em;
+      }
+      
+      .uv-info span {
+        color: #4361ee;
+        font-weight: 700;
+      }
+      
+      .uv-display {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 30px; /* Increased from 20px for better horizontal spacing */
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      
+      .uv-card, .temp-card {
+        background: linear-gradient(to bottom right, #fff, #f9f9f9);
+        padding: 15px;
+        border-radius: 12px;
+        min-width: 140px; /* Slightly increased from 120px */
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: transform 0.3s ease;
+      }
+      
+      .uv-card:hover, .temp-card:hover {
+        transform: translateY(-5px);
+      }
+      
+      .card-title {
+        font-size: 1.1em;
+        color: #555;
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+      
+      .card-value {
+        font-size: 2.2em;
+        font-weight: 700;
+      }
+      
+      /* UV Index color codes */
+      .uv-low {
+        background: linear-gradient(to bottom right, #e6f7e6, #c3e6c3);
+        color: #2e7d32;
+      }
+      
+      .uv-moderate {
+        background: linear-gradient(to bottom right, #fff9c4, #fff59d);
+        color: #f57f17;
+      }
+      
+      .uv-high {
+        background: linear-gradient(to bottom right, #ffebcc, #ffcc80);
+        color: #e65100;
+      }
+      
+      .uv-very-high {
+        background: linear-gradient(to bottom right, #ffcdd2, #ef9a9a);
+        color: #c62828;
+      }
+      
+      .uv-extreme {
+        background: linear-gradient(to bottom right, #e1bee7, #ce93d8);
+        color: #6a1b9a;
+      }
+      
+      .temp-value {
+        color: #2a9d8f;
+      }
+      
+      .temp-unit {
+        font-size: 0.5em;
+        vertical-align: super;
+        margin-left: 2px;
+        color: #000;
+      }
+      
+      .location-card {
+        width: 100%;
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        border-left: 4px solid #4361ee;
+      }
+      
+      /* UV index legend with horizontal layout */
+      .uv-legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 25px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+      }
+      
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-right: 10px;
+      }
+      
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        margin-right: 5px;
+      }
+      
+      .legend-text {
+        font-size: 0.85em;
+        color: #555;
+      }
+      
+      .legend-low {
+        background-color: #c3e6c3;
+      }
+      
+      .legend-moderate {
+        background-color: #fff59d;
+      }
+      
+      .legend-high {
+        background-color: #ffcc80;
+      }
+      
+      .legend-very-high {
+        background-color: #ef9a9a;
+      }
+      
+      .legend-extreme {
+        background-color: #ce93d8;
+      }
+      
+      /* Responsive styles */
+      @media (max-width: 768px) {
+        .container {
+          padding: 15px 10px;
+        }
+        
+        .uv-content {
+          padding: 20px 15px;
+        }
+        
+        .search-input-wrapper {
+          width: 85%;
+        }
+        
+        .uv-display {
+          gap: 15px;
+        }
+        
+        .uv-card, .temp-card {
+          width: 100%;
+          min-width: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {% include 'partials/header.html' %}
+
+    <div class="container">
+      <section class="uv-content">
+        <div class="location-notice">
+          <strong>Victoria UV Index</strong><br>
+          Search for locations in Victoria, Australia to check the current UV index and temperature.
+        </div>
+        
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <input 
+              type="text" 
+              id="location-input" 
+              placeholder="Type a location & select from suggestions" 
+            />
+            <div id="suggestions-container" class="suggestions-container" style="display: none;"></div>
+          </div>
+          <div class="search-instructions">
+            Start typing a location name and select from the dropdown list
+          </div>
+        </div>
+
+        <div id="error-container" class="error-message" style="display: {% if location_error %}block{% else %}none{% endif %};">
+          {{ error_message }}
+        </div>         
+
+        <div class="uv-info" id="uv-info">
+          <div class="location-card">
+            <h2>Location: <span id="location-name">{{ city }}</span></h2>
+          </div>
+          
+          <div class="uv-display">
+            <div class="uv-card" id="uv-card">
+              <div class="card-title">UV Index</div>
+              <div class="card-value" id="uv-index">{{ uv_index }}</div>
+            </div>
+            
+            <div class="temp-card">
+              <div class="card-title">Temperature</div>
+              <div class="card-value temp-value">
+                <span id="temperature">{{ temperature }}</span><span class="temp-unit">°C</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Added UV Legend -->
+          <div class="uv-legend">
+            <div class="legend-item">
+              <div class="legend-color legend-low"></div>
+              <div class="legend-text">Low (1-2)</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color legend-moderate"></div>
+              <div class="legend-text">Moderate (3-5)</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color legend-high"></div>
+              <div class="legend-text">High (6-7)</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color legend-very-high"></div>
+              <div class="legend-text">Very High (8-10)</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color legend-extreme"></div>
+              <div class="legend-text">Extreme (11+)</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      // Initialize a variable to store selected location data
+      let selectedLocation = {
+        name: '',
+        suburb: '',
+        postcode: ''
+      };
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        const locationInput = document.getElementById('location-input');
+        const suggestionsContainer = document.getElementById('suggestions-container');
+        
+        // Set initial UV index color based on value
+        setUVIndexColor(document.getElementById('uv-index').textContent);
+        
+        let debounceTimer;
+        
+        locationInput.addEventListener('input', function() {
+          const query = this.value.trim();
+          
+          clearTimeout(debounceTimer);
+          
+          if (query.length < 2) {
+            suggestionsContainer.style.display = 'none';
+            return;
+          }
+          
+          debounceTimer = setTimeout(function() {
+            fetch(`/address-suggestions/?query=${encodeURIComponent(query)}`)
+              .then(response => response.json())
+              .then(data => {
+                suggestionsContainer.innerHTML = '';
+                const suggestions = data.suggestions || [];
+                
+                if (suggestions.length > 0) {
+                  suggestions.forEach(suggestion => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = suggestion.name;
+                    
+                    item.addEventListener('click', function() {
+                      // Store full location info
+                      selectedLocation = {
+                        name: suggestion.name,
+                        suburb: suggestion.suburb || '',
+                        postcode: suggestion.postcode || '',
+                        lat: suggestion.lat,
+                        lon: suggestion.lon
+                      };
+                      
+                      // Update input and hide suggestions
+                      locationInput.value = suggestion.name;
+                      suggestionsContainer.style.display = 'none';
+                      
+                      // Use existing fetch function with error handling
+                      getUVIndexByCoordinates(suggestion.lat, suggestion.lon);
+                    });
+                    
+                    suggestionsContainer.appendChild(item);
+                  });
+                  
+                  suggestionsContainer.style.display = 'block';
+                } else {
+                  suggestionsContainer.style.display = 'none';
+                }
+              })
+              .catch(error => {
+                console.error('Error fetching suggestions:', error);
+                suggestionsContainer.style.display = 'none';
+              });
+          }, 300); // 300ms debounce
+        });
+        
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!locationInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+            suggestionsContainer.style.display = 'none';
+          }
+        });
+      });
+      
+      // Function to handle UV index fetch by coordinates
+      function getUVIndexByCoordinates(lat, lon) {
+        fetch(`/uv-index/?lat=${lat}&lon=${lon}`, {
+          headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) {
+              showError(data.error);
+            } else {
+              hideError();
+              const uvIndexElement = document.getElementById("uv-index");
+              uvIndexElement.textContent = data.uv_index;
+              
+              // Set UV index color based on value
+              setUVIndexColor(data.uv_index);
+              
+              document.getElementById("temperature").textContent = data.temperature;
+              
+              // Use suburb and postcode from Mapbox instead of WeatherAPI's city
+              let locationDisplay = selectedLocation.suburb;
+              if (selectedLocation.postcode) {
+                locationDisplay += ` ${selectedLocation.postcode}`;
+              }
+              
+              // Fallback to WeatherAPI location if we don't have suburb
+              if (!locationDisplay) {
+                locationDisplay = data.city;
+              }
+              
+              document.getElementById("location-name").textContent = locationDisplay;
+            }
+          })
+          .catch(error => {
+            console.error("Error fetching UV data:", error);
+            showError("Error fetching data. Please try again.");
+          });
+      }
+      
+      // Function to set UV index color based on value
+      function setUVIndexColor(uvIndex) {
+        const uvCard = document.getElementById("uv-card");
+        const uvValue = parseFloat(uvIndex);
+        
+        // Remove any existing color classes
+        uvCard.classList.remove("uv-low", "uv-moderate", "uv-high", "uv-very-high", "uv-extreme");
+        
+        // Apply appropriate color class based on UV index range
+        if (uvValue <= 2) {
+          uvCard.classList.add("uv-low");
+        } else if (uvValue <= 5) {
+          uvCard.classList.add("uv-moderate");
+        } else if (uvValue <= 7) {
+          uvCard.classList.add("uv-high");
+        } else if (uvValue <= 10) {
+          uvCard.classList.add("uv-very-high");
+        } else {
+          uvCard.classList.add("uv-extreme");
+        }
+      }
+      
+      function showError(message) {
+        const errorContainer = document.getElementById("error-container");
+        errorContainer.textContent = message;
+        errorContainer.style.display = "block";
+      }
+      
+      function hideError() {
+        document.getElementById("error-container").style.display = "none";
+      }
+    </script>
+  </body>
+</html>
