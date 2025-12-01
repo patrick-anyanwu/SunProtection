@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personalization</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    <style>
+      body {
+        background-color: #fde5cf;
+        text-align: center;
+        font-family: Arial, sans-serif;
+      }
+      .personalization {
+        padding: 40px 20px 20px;
+      }
+      .personalization h2 {
+        font-size: 28px;
+        margin-bottom: 30px;
+      }
+      .skin-types {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        justify-content: center;
+        max-width: 90%;
+        margin: 20px auto;
+      }
+      .skin-card {
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        font-size: 15px;
+        color: black;
+        box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease-in-out;
+        cursor: pointer;
+        min-height: 170px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .skin-card:hover {
+        transform: scale(1.05);
+      }
+      /* Make text white for dark skin types */
+      .skin-card.dark-type {
+        color: white;
+      }
+      .popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 25px;
+        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.4);
+        border-radius: 15px;
+        text-align: center;
+        z-index: 1000;
+        width: 450px;
+        max-width: 90%;
+      }
+      .popup h3 {
+        margin-top: 0;
+        font-size: 22px;
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .popup button {
+        margin-top: 20px;
+        padding: 10px 25px;
+        background: #f4a261;
+        border: none;
+        color: white;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: background 0.3s;
+      }
+      .popup button:hover {
+        background: #e76f51;
+      }
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 500;
+      }
+      table {
+        width: 100%;
+        margin-top: 15px;
+        border-collapse: collapse;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      }
+      th,
+      td {
+        padding: 15px 10px;
+        text-align: center;
+        vertical-align: middle;
+        border: 1px solid #ddd;
+      }
+      th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+      }
+      td {
+        background-color: #fafafa;
+      }
+      tr.highlight td {
+        transition: all 0.3s ease;
+      }
+      tr.highlight:hover td {
+        transform: scale(1.02);
+        cursor: pointer;
+      }
+      /* New UV Index color scheme */
+      tr.uv-low td {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      tr.uv-moderate td {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+      tr.uv-high td {
+        background-color: #ffe0cc;
+        color: #883d00;
+      }
+      tr.uv-very-high td {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+      tr.uv-extreme td {
+        background-color: #e8d6f3;
+        color: #5a1c6e;
+      }
+      /* Media query for mobile responsiveness */
+      @media (max-width: 768px) {
+        .skin-types {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 480px) {
+        .skin-types {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {% include 'partials/header.html' %}
+
+    <section class="personalization">
+      <h2>Choose Your Skin Type for the Best Sun Care</h2>
+      <div class="skin-types">
+        {% for skin in skin_types %}
+        <div
+          class="skin-card {% if skin.type == 'Type 5' or skin.type == 'Type 6' %}dark-type{% endif %}"
+          style="background-color: {{ skin.color }}"
+          onclick="showPopup('{{ skin.type }}')"
+        >
+          <h3>{{ skin.type }}</h3>
+          <p><strong>{{ skin.title }}</strong></p>
+          <p>{{ skin.desc }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <div class="overlay" id="overlay" onclick="closePopup()"></div>
+
+    <div class="popup" id="popup">
+      <h3 id="popup-title"></h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>UV Index</th>
+            <th>Protection Advice</th>
+          </tr>
+        </thead>
+        <tbody id="popup-table-body"></tbody>
+      </table>
+
+      <button onclick="closePopup()">Close</button>
+    </div>
+
+    <script>
+      function showPopup(skinType) {
+          let skinData = {{ skin_types|safe }};
+          let selectedSkin = skinData.find(skin => skin.type === skinType);
+
+          document.getElementById("popup-title").innerText = selectedSkin.type + " - " + selectedSkin.title;
+          
+          let tableBody = document.getElementById("popup-table-body");
+          tableBody.innerHTML = "";
+
+          for (let uv in selectedSkin.sunscreen_advice) {
+              let uvValue = parseInt(uv.split('-')[0]);
+              let rowClass = "";
+              
+              // Assign color class based on UV index range
+              if (uvValue >= 11) {
+                  rowClass = "uv-extreme";   // Purple for 11+
+              } else if (uvValue >= 8) {
+                  rowClass = "uv-very-high"; // Red for 8-10
+              } else if (uvValue >= 6) {
+                  rowClass = "uv-high";      // Orange for 6-7
+              } else if (uvValue >= 3) {
+                  rowClass = "uv-moderate";  // Yellow for 3-5
+              } else {
+                  rowClass = "uv-low";       // Green for 1-2
+              }
+              
+              let row = `<tr class="highlight ${rowClass}"><td>${uv}</td><td>${selectedSkin.sunscreen_advice[uv]}</td></tr>`;
+              tableBody.innerHTML += row;
+          }
+
+          document.getElementById("popup").style.display = "block";
+          document.getElementById("overlay").style.display = "block";
+      }
+
+      function closePopup() {
+          document.getElementById("popup").style.display = "none";
+          document.getElementById("overlay").style.display = "none";
+      }
+    </script>
+  </body>
+</html>
